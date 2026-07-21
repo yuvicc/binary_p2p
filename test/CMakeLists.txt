@@ -1,12 +1,15 @@
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
-add_executable(byte_reader_test byte_reader_test.cpp)
+# Register a Boost.Test executable and its CTest entry from a single source file.
+function(add_boost_test name)
+    add_executable(${name} ${name}.cpp)
+    target_link_libraries(${name}
+        PRIVATE
+            binary_p2p
+            Boost::unit_test_framework
+    )
+    add_test(NAME ${name} COMMAND ${name})
+endfunction()
 
-target_link_libraries(byte_reader_test
-    PRIVATE
-        binary_p2p
-        Boost::unit_test_framework
-)
-
-add_test(NAME byte_reader_test COMMAND byte_reader_test)
-
+add_boost_test(byte_reader_test)
+add_boost_test(message_header_parser_test)
