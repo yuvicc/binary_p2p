@@ -38,6 +38,9 @@ class binary_p2pRecipe(ConanFile):
         tc = CMakeToolchain(self)
         tc.generate()
 
+    def build_requirements(self):
+        self.test_requires("boost/1.91.0")
+
     def build(self):
         cmake = CMake(self)
         cmake.configure()
