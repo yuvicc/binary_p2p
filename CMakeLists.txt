@@ -9,6 +9,7 @@ project(
 add_library(binary_p2p
     src/binary_p2p.cpp
     src/message_header.cpp
+    src/message_header_parser.cpp
     src/util/reader.cpp
 )
 
