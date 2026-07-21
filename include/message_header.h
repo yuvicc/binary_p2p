@@ -28,7 +28,7 @@ public:
                   std::array<std::byte, 4> checksum_val);
 
     [[nodiscard]] std::string_view command_name() const noexcept;
-    [[nodiscard]] bool is_valid_command(const std::array<char, command_size>& command) noexcept;
+    [[nodiscard]] static bool is_valid_command(const std::array<char, command_size>& command) noexcept;
 
 private:
     [[nodiscard]] static bool valid_character(char character) noexcept;
