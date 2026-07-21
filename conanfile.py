@@ -4,7 +4,7 @@ from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout, CMakeDeps
 
 class binary_p2pRecipe(ConanFile):
     name = "binary_p2p"
-    version = "0.0.1"
+    version = "0.1.0"
     package_type = "library"
 
     # Optional metadata
@@ -19,7 +19,6 @@ class binary_p2pRecipe(ConanFile):
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = {"shared": False, "fPIC": True}
 
-    # Sources are located in the same place as this recipe, copy them to the recipe
     exports_sources = "CMakeLists.txt", "src/*", "include/*"
 
     def config_options(self):

@@ -9,6 +9,7 @@ project(
 add_library(binary_p2p
     src/binary_p2p.cpp
     src/message_header.cpp
+    src/util/reader.cpp
 )
 
 target_compile_features(binary_p2p
@@ -17,7 +18,6 @@ target_compile_features(binary_p2p
 
 set_target_properties(binary_p2p PROPERTIES
     CXX_EXTENSIONS OFF
-    PUBLIC_HEADER "include/binary_p2p.h;include/message_header.h"
 )
 
 target_include_directories(binary_p2p
@@ -30,8 +30,20 @@ include(GNUInstallDirs)
 
 install(
     TARGETS binary_p2p
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+install(
+    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    FILES_MATCHING PATTERN "*.h"
+)
+
+include(CTest)
+
+if (BUILD_TESTING)
+    add_subdirectory(test)
+endif()
+
