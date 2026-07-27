@@ -12,6 +12,9 @@ add_library(binary_p2p
     src/message_header_parser.cpp
     src/message_checksum.cpp
     src/raw_message_parser.cpp
+    src/compact_size.cpp
+    src/version_parser.cpp
+    src/payload_parser.cpp
     src/util/reader.cpp
     src/util/sha256.cpp
 )
