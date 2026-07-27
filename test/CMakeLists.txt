@@ -13,3 +13,4 @@ endfunction()
 
 add_boost_test(byte_reader_test)
 add_boost_test(message_header_parser_test)
+add_boost_test(raw_message_parser_test)
