@@ -11,6 +11,11 @@ add_library(binary_p2p
     src/message_header.cpp
     src/message_header_parser.cpp
     src/util/reader.cpp
+    src/util/sha256.cpp
+)
+
+target_compile_definitions(binary_p2p
+    PRIVATE DISABLE_OPTIMIZED_SHA256
 )
 
 target_compile_features(binary_p2p
