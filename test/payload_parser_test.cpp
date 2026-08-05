@@ -60,6 +60,23 @@ std::vector<std::byte> single_inventory_payload(std::uint32_t type)
     return out;
 }
 
+// A single-entry headers payload: CompactSize count of 1 followed by an
+// 80-byte block header and a zero transaction count.
+std::vector<std::byte> single_headers_payload()
+{
+    std::vector<std::byte> out;
+    put_u8(out, 0x01);                       // CompactSize count = 1
+    put_le<std::int32_t>(out, 0x20000000);   // version
+    for (int i = 0; i < 64; ++i) {           // prev block hash + merkle root
+        put_u8(out, 0x00);
+    }
+    put_le<std::uint32_t>(out, 0);           // timestamp
+    put_le<std::uint32_t>(out, 0);           // bits
+    put_le<std::uint32_t>(out, 0);           // nonce
+    put_u8(out, 0x00);                       // txn count = 0
+    return out;
+}
+
 } // namespace
 
 BOOST_AUTO_TEST_CASE(empty_verack_succeeds)
@@ -185,6 +202,19 @@ BOOST_AUTO_TEST_CASE(inv_command_is_parsed)
     BOOST_TEST(inv.inventory[0].type == InventoryType::tx);
 }
 
+
+BOOST_AUTO_TEST_CASE(headers_command_is_parsed)
+{
+    const auto result =
+        parse_payload(make_raw("headers", single_headers_payload()));
+
+    BOOST_REQUIRE(result.has_value());
+    BOOST_REQUIRE(std::holds_alternative<HeadersMessage>(result->payload));
+
+    const auto& headers = std::get<HeadersMessage>(result->payload);
+    BOOST_REQUIRE(headers.headers.size() == 1);
+    BOOST_TEST(headers.headers[0].version == 0x20000000);
+}
 
 BOOST_AUTO_TEST_CASE(version_command_is_parsed)
 {
