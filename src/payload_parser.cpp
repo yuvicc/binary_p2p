@@ -165,6 +165,27 @@ parse_payload(RawMessage raw_message)
         };
     }
 
+    if (command == "getdata") {
+        auto inventory = parse_inventory_payload(
+            raw_message.payload
+        );
+
+        if (!inventory) {
+            return std::unexpected{
+                inventory.error()
+            };
+        }
+
+        return Message{
+            .header = std::move(raw_message.header),
+            .payload = MessagePayload{
+                GetdataMessage{
+                    .inventory = std::move(*inventory),
+                }
+            },
+        };
+    }
+
     // An unknown command is not automatically malformed: a newer peer may send
     // a command this parser does not yet understand. Preserve the raw payload
     // so higher-level code can inspect, ignore, log, or process it later.

@@ -47,6 +47,19 @@ std::vector<std::byte> nonce_bytes(std::uint64_t nonce)
     return out;
 }
 
+// A single-entry inventory payload: CompactSize count of 1 followed by one
+// inventory vector (uint32 type + 32-byte hash).
+std::vector<std::byte> single_inventory_payload(std::uint32_t type)
+{
+    std::vector<std::byte> out;
+    put_u8(out, 0x01); // CompactSize count = 1
+    put_le<std::uint32_t>(out, type);
+    for (int i = 0; i < 32; ++i) {
+        put_u8(out, 0x00);
+    }
+    return out;
+}
+
 } // namespace
 
 BOOST_AUTO_TEST_CASE(empty_verack_succeeds)
@@ -157,6 +170,21 @@ BOOST_AUTO_TEST_CASE(inconsistent_raw_message_is_rejected)
     BOOST_REQUIRE(!result.has_value());
     BOOST_TEST(result.error() == ParseError::malformed_payload);
 }
+
+BOOST_AUTO_TEST_CASE(inv_command_is_parsed)
+{
+    const auto result = parse_payload(
+        make_raw("inv", single_inventory_payload(InventoryType::tx))
+    );
+
+    BOOST_REQUIRE(result.has_value());
+    BOOST_REQUIRE(std::holds_alternative<InvMessage>(result->payload));
+
+    const auto& inv = std::get<InvMessage>(result->payload);
+    BOOST_REQUIRE(inv.inventory.size() == 1);
+    BOOST_TEST(inv.inventory[0].type == InventoryType::tx);
+}
+
 
 BOOST_AUTO_TEST_CASE(version_command_is_parsed)
 {
