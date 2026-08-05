@@ -10,6 +10,7 @@ add_library(binary_p2p
     src/binary_p2p.cpp
     src/message_header.cpp
     src/message_header_parser.cpp
+    src/headers_parser.cpp
     src/inventory_parser.cpp
     src/message_checksum.cpp
     src/raw_message_parser.cpp
@@ -55,7 +56,9 @@ install(
 
 include(CTest)
 
-if (BUILD_TESTING)
+# The test tree is developer-only and is not exported into the Conan package
+# build, so only descend into it when it is actually present.
+if (BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test/CMakeLists.txt")
     add_subdirectory(test)
 endif()
 

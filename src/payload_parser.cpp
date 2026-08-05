@@ -1,5 +1,6 @@
 #include "payload_parser.h"
 
+#include "headers_parser.h"
 #include "inventory_parser.h"
 #include "util/reader.h"
 #include "version_parser.h"
@@ -181,6 +182,27 @@ parse_payload(RawMessage raw_message)
             .payload = MessagePayload{
                 GetdataMessage{
                     .inventory = std::move(*inventory),
+                }
+            },
+        };
+    }
+
+    if (command == "headers") {
+        auto headers = parse_headers_payload(
+            raw_message.payload
+        );
+
+        if (!headers) {
+            return std::unexpected{
+                headers.error()
+            };
+        }
+
+        return Message{
+            .header = std::move(raw_message.header),
+            .payload = MessagePayload{
+                HeadersMessage{
+                    .headers = std::move(*headers),
                 }
             },
         };
