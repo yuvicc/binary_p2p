@@ -13,6 +13,7 @@ add_library(binary_p2p
     src/headers_parser.cpp
     src/inventory_parser.cpp
     src/message_checksum.cpp
+    src/message_stream_decoder.cpp
     src/raw_message_parser.cpp
     src/compact_size.cpp
     src/version_parser.cpp
