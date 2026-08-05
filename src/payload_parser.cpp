@@ -1,5 +1,6 @@
 #include "payload_parser.h"
 
+#include "inventory_parser.h"
 #include "util/reader.h"
 #include "version_parser.h"
 
@@ -138,6 +139,27 @@ parse_payload(RawMessage raw_message)
             .payload = MessagePayload{
                 PongMessage{
                     .nonce = *nonce,
+                }
+            },
+        };
+    }
+
+    if (command == "inv") {
+        auto inventory = parse_inventory_payload(
+            raw_message.payload
+        );
+
+        if (!inventory) {
+            return std::unexpected{
+                inventory.error()
+            };
+        }
+
+        return Message{
+            .header = std::move(raw_message.header),
+            .payload = MessagePayload{
+                InvMessage{
+                    .inventory = std::move(*inventory),
                 }
             },
         };

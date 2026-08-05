@@ -1,5 +1,6 @@
 #pragma once
 
+#include "inventory.h"
 #include "message_header.h"
 #include "version_message.h"
 
@@ -33,6 +34,15 @@ struct PongMessage {
     ) = default;
 };
 
+struct InvMessage {
+    std::vector<InventoryVector> inventory;
+
+    friend bool operator==(
+        const InvMessage&,
+        const InvMessage&
+    ) = default;
+};
+
 struct UnknownMessage {
     std::vector<std::byte> payload;
 
@@ -47,6 +57,7 @@ using MessagePayload = std::variant<
     VerackMessage,
     PingMessage,
     PongMessage,
+    InvMessage,
     UnknownMessage
 >;
 
