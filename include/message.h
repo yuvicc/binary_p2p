@@ -43,6 +43,15 @@ struct InvMessage {
     ) = default;
 };
 
+struct GetdataMessage {
+    std::vector<InventoryVector> inventory;
+
+    friend bool operator==(
+        const GetdataMessage&,
+        const GetdataMessage&
+    ) = default;
+};
+
 struct UnknownMessage {
     std::vector<std::byte> payload;
 
@@ -58,6 +67,7 @@ using MessagePayload = std::variant<
     PingMessage,
     PongMessage,
     InvMessage,
+    GetdataMessage,
     UnknownMessage
 >;
 
