@@ -11,12 +11,16 @@ add_library(binary_p2p
     src/message_header.cpp
     src/message_header_parser.cpp
     src/headers_parser.cpp
+    src/headers_serializer.cpp
     src/inventory_parser.cpp
+    src/inventory_serializer.cpp
     src/message_checksum.cpp
+    src/message_serializer.cpp
     src/message_stream_decoder.cpp
     src/raw_message_parser.cpp
     src/compact_size.cpp
     src/version_parser.cpp
+    src/version_serializer.cpp
     src/payload_parser.cpp
     src/util/reader.cpp
     src/util/writer.cpp

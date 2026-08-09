@@ -100,6 +100,25 @@ read_compact_size(
     return value;
 }
 
+void write_compact_size(ByteWriter& writer, std::uint64_t value)
+{
+    if (value < 0xfd) {
+        writer.write_u8(static_cast<std::uint8_t>(value));
+    }
+    else if (value <= 0xffffULL) {
+        writer.write_u8(0xfd);
+        writer.write_u16_le(static_cast<std::uint16_t>(value));
+    }
+    else if (value <= 0xffff'ffffULL) {
+        writer.write_u8(0xfe);
+        writer.write_u32_le(static_cast<std::uint32_t>(value));
+    }
+    else {
+        writer.write_u8(0xff);
+        writer.write_u64_le(value);
+    }
+}
+
 
 
 
