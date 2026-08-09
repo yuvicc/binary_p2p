@@ -19,6 +19,7 @@ add_library(binary_p2p
     src/version_parser.cpp
     src/payload_parser.cpp
     src/util/reader.cpp
+    src/util/writer.cpp
     src/util/sha256.cpp
 )
 
