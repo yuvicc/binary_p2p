@@ -60,10 +60,16 @@ install(
     FILES_MATCHING PATTERN "*.h"
 )
 
+option(BINARY_P2P_BUILD_EXAMPLES "Build the example programs" ON)
+
+# The examples are developer-only and are not exported into the Conan package
+if (BINARY_P2P_BUILD_EXAMPLES AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt")
+    add_subdirectory(examples)
+endif()
+
 include(CTest)
 
-# The test tree is developer-only and is not exported into the Conan package
-# build, so only descend into it when it is actually present.
+
 if (BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test/CMakeLists.txt")
     add_subdirectory(test)
 endif()
