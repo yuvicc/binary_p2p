@@ -1,5 +1,7 @@
 #include "message_serializer.h"
 
+#include "block_serializer.h"
+#include "getheaders_serializer.h"
 #include "headers_serializer.h"
 #include "inventory_serializer.h"
 #include "message_checksum.h"
@@ -40,6 +42,12 @@ std::vector<std::byte> serialize_payload(const MessagePayload& payload)
             }
             else if constexpr (std::is_same_v<T, HeadersMessage>) {
                 serialize_headers_payload(writer, message.headers);
+            }
+            else if constexpr (std::is_same_v<T, GetHeadersMessage>) {
+                serialize_getheaders_payload(writer, message);
+            }
+            else if constexpr (std::is_same_v<T, BlockMessage>) {
+                serialize_block_payload(writer, message);
             }
             else if constexpr (std::is_same_v<T, UnknownMessage>) {
                 writer.write_bytes(message.payload);

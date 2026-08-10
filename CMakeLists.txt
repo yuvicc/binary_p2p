@@ -10,6 +10,10 @@ add_library(binary_p2p
     src/binary_p2p.cpp
     src/message_header.cpp
     src/message_header_parser.cpp
+    src/block_parser.cpp
+    src/block_serializer.cpp
+    src/getheaders_parser.cpp
+    src/getheaders_serializer.cpp
     src/headers_parser.cpp
     src/headers_serializer.cpp
     src/inventory_parser.cpp

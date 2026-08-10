@@ -20,8 +20,19 @@ add_boost_test(inventory_parser_test)
 add_boost_test(inventory_serializer_test)
 add_boost_test(headers_parser_test)
 add_boost_test(headers_serializer_test)
+add_boost_test(getheaders_test)
+add_boost_test(block_test)
 add_boost_test(message_stream_decoder_test)
 add_boost_test(message_serializer_test)
 add_boost_test(version_parser_test)
 add_boost_test(version_serializer_test)
 add_boost_test(payload_parser_test)
+
+# These tests open sockets and spawn background threads.
+find_package(Threads REQUIRED)
+
+add_boost_test(net_test)
+target_link_libraries(net_test PRIVATE Threads::Threads)
+
+add_boost_test(handshake_test)
+target_link_libraries(handshake_test PRIVATE Threads::Threads)

@@ -15,7 +15,8 @@ namespace {
 // Bitcoin caps a headers message at MAX_HEADERS_RESULTS entries.
 constexpr std::uint64_t max_headers_count = 2000;
 
-[[nodiscard]]
+} // namespace
+
 std::expected<BlockHeader, ParseError>
 parse_block_header(ByteReader& reader)
 {
@@ -64,8 +65,6 @@ parse_block_header(ByteReader& reader)
         .nonce = *nonce,
     };
 }
-
-} // namespace
 
 std::expected<std::vector<BlockHeader>, ParseError>
 parse_headers_payload(

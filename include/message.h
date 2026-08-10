@@ -5,6 +5,7 @@
 #include "message_header.h"
 #include "version_message.h"
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <variant>
@@ -62,6 +63,31 @@ struct HeadersMessage {
     ) = default;
 };
 
+struct GetHeadersMessage {
+    std::uint32_t protocol_version{};
+    std::vector<std::array<std::byte, 32>> block_locator_hashes;
+    std::array<std::byte, 32> hash_stop{};
+
+    friend bool operator==(
+        const GetHeadersMessage&,
+        const GetHeadersMessage&
+    ) = default;
+};
+
+struct BlockMessage {
+    BlockHeader header;
+    std::uint64_t transaction_count{};
+    // The transactions are kept as raw serialized bytes: the message framing
+    // already delimits them, and a validation engine (for example
+    // libbitcoinkernel) consumes the serialized block directly.
+    std::vector<std::byte> transactions;
+
+    friend bool operator==(
+        const BlockMessage&,
+        const BlockMessage&
+    ) = default;
+};
+
 struct UnknownMessage {
     std::vector<std::byte> payload;
 
@@ -79,6 +105,8 @@ using MessagePayload = std::variant<
     InvMessage,
     GetdataMessage,
     HeadersMessage,
+    GetHeadersMessage,
+    BlockMessage,
     UnknownMessage
 >;
 

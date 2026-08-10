@@ -1,5 +1,7 @@
 #include "payload_parser.h"
 
+#include "block_parser.h"
+#include "getheaders_parser.h"
 #include "headers_parser.h"
 #include "inventory_parser.h"
 #include "util/reader.h"
@@ -204,6 +206,44 @@ parse_payload(RawMessage raw_message)
                 HeadersMessage{
                     .headers = std::move(*headers),
                 }
+            },
+        };
+    }
+
+    if (command == "getheaders") {
+        auto getheaders = parse_getheaders_payload(
+            raw_message.payload
+        );
+
+        if (!getheaders) {
+            return std::unexpected{
+                getheaders.error()
+            };
+        }
+
+        return Message{
+            .header = std::move(raw_message.header),
+            .payload = MessagePayload{
+                std::move(*getheaders)
+            },
+        };
+    }
+
+    if (command == "block") {
+        auto block = parse_block_payload(
+            raw_message.payload
+        );
+
+        if (!block) {
+            return std::unexpected{
+                block.error()
+            };
+        }
+
+        return Message{
+            .header = std::move(raw_message.header),
+            .payload = MessagePayload{
+                std::move(*block)
             },
         };
     }
