@@ -29,6 +29,9 @@ add_library(binary_p2p
     src/util/reader.cpp
     src/util/writer.cpp
     src/util/sha256.cpp
+    src/net/tcp_connection.cpp
+    src/net/peer.cpp
+    src/net/handshake.cpp
 )
 
 target_compile_definitions(binary_p2p
