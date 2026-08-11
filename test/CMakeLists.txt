@@ -22,6 +22,8 @@ add_boost_test(headers_parser_test)
 add_boost_test(headers_serializer_test)
 add_boost_test(getheaders_test)
 add_boost_test(block_test)
+add_boost_test(block_hash_test)
+add_boost_test(block_locator_test)
 add_boost_test(message_stream_decoder_test)
 add_boost_test(message_serializer_test)
 add_boost_test(version_parser_test)
@@ -36,3 +38,9 @@ target_link_libraries(net_test PRIVATE Threads::Threads)
 
 add_boost_test(handshake_test)
 target_link_libraries(handshake_test PRIVATE Threads::Threads)
+
+add_boost_test(header_sync_test)
+target_link_libraries(header_sync_test PRIVATE Threads::Threads)
+
+add_boost_test(block_download_test)
+target_link_libraries(block_download_test PRIVATE Threads::Threads)
