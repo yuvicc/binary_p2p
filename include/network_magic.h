@@ -19,6 +19,15 @@ inline constexpr std::array<std::byte, 4> regtest {
     std::byte{0xda},
 };
 
+// Default (global) signet. A custom signet with its own -signetchallenge uses
+// different magic derived from the challenge.
+inline constexpr std::array<std::byte, 4> signet {
+    std::byte{0x0a},
+    std::byte{0x03},
+    std::byte{0xcf},
+    std::byte{0x40},
+};
+
 } // namespace NetworkMagic
 
 
