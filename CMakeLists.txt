@@ -12,6 +12,8 @@ add_library(binary_p2p
     src/message_header_parser.cpp
     src/block_parser.cpp
     src/block_serializer.cpp
+    src/block_hash.cpp
+    src/block_locator.cpp
     src/getheaders_parser.cpp
     src/getheaders_serializer.cpp
     src/headers_parser.cpp
@@ -32,6 +34,8 @@ add_library(binary_p2p
     src/net/tcp_connection.cpp
     src/net/peer.cpp
     src/net/handshake.cpp
+    src/net/header_sync.cpp
+    src/net/block_download.cpp
 )
 
 target_compile_definitions(binary_p2p
