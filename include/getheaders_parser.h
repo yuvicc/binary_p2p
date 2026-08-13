@@ -7,7 +7,7 @@
 #include <expected>
 #include <span>
 
-// Parses the body of a "getheaders".
+// Parse the body of a "getheaders".
 [[nodiscard]]
 std::expected<GetHeadersMessage, ParseError>
 parse_getheaders_payload(

@@ -13,11 +13,9 @@ enum class TcpErrorCode {
     receive_failed,
 };
 
-// A blocking TCP socket (POSIX). Move-only, not thread-safe.
-// Todo: make thrad safe
+// TCP socket (POSIX).
 class TcpConnection {
 public:
-    // Adopt an already-connected socket (for example one returned by accept()).
     explicit TcpConnection(int fd) noexcept;
 
     ~TcpConnection();
@@ -28,7 +26,7 @@ public:
     TcpConnection(const TcpConnection&) = delete;
     TcpConnection& operator=(const TcpConnection&) = delete;
 
-    // Resolve host (name or literal address) and open a connection to port.
+    // Resolve host name and open a connection to port.
     [[nodiscard]]
     static std::expected<TcpConnection, TcpErrorCode>
     connect(std::string_view host, std::uint16_t port);

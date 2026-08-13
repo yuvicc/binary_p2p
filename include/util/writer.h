@@ -34,37 +34,22 @@ public:
         return m_bytes;
     }
 
-    // hand the accumulated buffer to the caller, leaving this writer empty
+    // hand the accumulated buffer to the caller
     [[nodiscard]] std::vector<std::byte> take() noexcept
     {
         return std::move(m_bytes);
     }
 
-    // write one unsigned byte
     void write_u8(std::uint8_t value);
-
-    // write a two-byte unsigned integer in LE order
     void write_u16_le(std::uint16_t value);
-
-    // write a two-byte unsigned integer in BE order
     void write_u16_be(std::uint16_t value);
-
-    // write a four-byte unsigned integer in LE order
     void write_u32_le(std::uint32_t value);
-
-    // write a four-byte signed integer in LE order
     void write_i32_le(std::int32_t value);
-
-    // write an eight-byte unsigned integer in LE order
     void write_u64_le(std::uint64_t value);
-
-    // write an eight-byte signed integer in LE order
     void write_i64_le(std::int64_t value);
-
-    // append a run of bytes verbatim
     void write_bytes(std::span<const std::byte> bytes);
 
-    // append exactly N bytes verbatim
+    // append exactly N bytes
     template<std::size_t N>
     void write_array(const std::array<std::byte, N>& bytes)
     {

@@ -12,8 +12,6 @@ enum class HandshakeErrorCode {
     unexpected_message, // the peer violated the handshake ordering
 };
 
-// Perform the initiator side of the Bitcoin version handshake over an already
-// connected peer
+// perform handshake for alreadty connected peer
 [[nodiscard]]
-std::expected<VersionMessage, HandshakeErrorCode>
-perform_handshake(Peer& peer, const VersionMessage& local_version);
+std::expected<VersionMessage, HandshakeErrorCode> perform_handshake(Peer& peer, const VersionMessage& local_version);

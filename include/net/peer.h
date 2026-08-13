@@ -16,7 +16,7 @@ enum class PeerErrorCode {
     protocol_error,    // the bytes on the wire did not frame a valid message
 };
 
-// A connected Bitcoin peer
+// Bitcoin peer
 class Peer {
 public:
     Peer(TcpConnection connection, std::array<std::byte, 4> magic);
@@ -26,11 +26,9 @@ public:
     std::expected<void, PeerErrorCode>
     send(std::string_view command, const MessagePayload& payload);
 
-    // Block until a whole message has been received. Reads from the socket as
-    // needed. Fails if the connection closes or the stream desynchronises.
+    // Blocks until a whole message has been received.
     [[nodiscard]]
-    std::expected<RawMessage, PeerErrorCode>
-    receive();
+    std::expected<RawMessage, PeerErrorCode> receive();
 
 private:
     TcpConnection m_connection;

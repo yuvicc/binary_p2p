@@ -2,12 +2,18 @@
 // headers from genesis using getheaders/headers rounds.
 //
 //   Usage: connect [host] [port] [network]
-//   Defaults: 127.0.0.1 18444 regtest
+//          connect [host] [network]          (port defaults per network)
+//   networks: regtest (default), signet, mainnet
+//   default ports: regtest 18444, signet 38333, mainnet 8333
 //
-// Start a regtest node and mine some blocks first, e.g.:
+// Regtest (mine your own blocks):
 //   bitcoind -regtest -datadir=/tmp/regtest-datadir -listen=1 -port=18444 -daemon
 //   ADDR=$(bitcoin-cli -regtest -datadir=/tmp/regtest-datadir getnewaddress)
 //   bitcoin-cli -regtest -datadir=/tmp/regtest-datadir generatetoaddress 20 "$ADDR"
+//
+// Signet (syncs the public signet chain):
+//   bitcoind -signet -datadir=/tmp/signet-datadir -listen=1 -daemon
+//   ./connect 127.0.0.1 signet
 
 #include "block_hash.h"
 #include "block_locator.h"
@@ -72,7 +78,21 @@ Hash from_display_hex(const std::string& hex)
     return out;
 }
 
+bool is_known_network(const std::string& name)
+{
+    return name == "regtest" || name == "signet" || name == "mainnet";
+}
+
+std::uint16_t default_port(const std::string& network)
+{
+    if (network == "mainnet") return 8333;
+    if (network == "signet")  return 38333;
+    return 18444; // regtest
+}
+
 // The genesis header for each network. Its fields are fixed by the protocol.
+// The coinbase (and thus the merkle root) is shared across all networks; only
+// timestamp/bits/nonce differ.
 BlockHeader genesis_for(const std::string& network)
 {
     BlockHeader genesis{
@@ -89,6 +109,11 @@ BlockHeader genesis_for(const std::string& network)
         genesis.timestamp = 1231006505;
         genesis.bits = 0x1d00ffff;
         genesis.nonce = 2083236893;
+    }
+    else if (network == "signet") {
+        genesis.timestamp = 1598918400;
+        genesis.bits = 0x1e0377ae;
+        genesis.nonce = 52613770;
     }
 
     return genesis;
@@ -112,14 +137,25 @@ VersionMessage local_version()
 int main(int argc, char** argv)
 {
     const std::string host = argc > 1 ? argv[1] : "127.0.0.1";
-    const std::uint16_t port = argc > 2
-        ? static_cast<std::uint16_t>(std::atoi(argv[2]))
-        : 18444;
-    const std::string network = argc > 3 ? argv[3] : "regtest";
 
-    const auto magic = network == "mainnet"
-        ? NetworkMagic::mainnet
-        : NetworkMagic::regtest;
+    // The second argument may be either a port or a network name, so
+    // "connect host signet" works and picks signet's default port.
+    std::string network = "regtest";
+    std::uint16_t port = 0;
+    if (argc > 2 && is_known_network(argv[2])) {
+        network = argv[2];
+    }
+    else {
+        if (argc > 2) port = static_cast<std::uint16_t>(std::atoi(argv[2]));
+        if (argc > 3) network = argv[3];
+    }
+    if (port == 0) {
+        port = default_port(network);
+    }
+
+    const auto magic = network == "mainnet" ? NetworkMagic::mainnet
+                     : network == "signet"  ? NetworkMagic::signet
+                                            : NetworkMagic::regtest;
 
     std::cout << "connecting to " << host << ':' << port
               << " (" << network << ")\n";
@@ -189,12 +225,25 @@ int main(int argc, char** argv)
     const std::size_t tip_height = chain.size() - 1;
     std::cout << "\nsynced to height " << tip_height << '\n';
     std::cout << "tip hash : " << to_display_hex(chain_hashes.back()) << '\n';
-    std::cout << "(compare with: bitcoin-cli -regtest getbestblockhash)\n";
+    std::cout << "(compare with: bitcoin-cli -" << network
+              << " getbestblockhash)\n";
 
-    // Download the full block for every header we synced.
+    // Download full blocks. On a large chain (signet/mainnet) downloading every
+    // block sequentially is impractical, so cap it to the most recent ones.
+    constexpr std::size_t max_blocks_to_download = 50;
     if (tip_height > 0) {
-        std::cout << "\ndownloading " << tip_height << " blocks...\n";
-        for (std::size_t height = 1; height <= tip_height; ++height) {
+        const std::size_t first = tip_height > max_blocks_to_download
+            ? tip_height - max_blocks_to_download + 1
+            : 1;
+
+        if (first > 1) {
+            std::cout << "\ndownloading the most recent " << (tip_height - first + 1)
+                      << " blocks (of " << tip_height << ")...\n";
+        } else {
+            std::cout << "\ndownloading " << tip_height << " blocks...\n";
+        }
+
+        for (std::size_t height = first; height <= tip_height; ++height) {
             const auto block = request_block(peer, chain_hashes[height]);
             if (!block) {
                 std::cerr << "block download failed at height " << height
@@ -213,7 +262,7 @@ int main(int argc, char** argv)
             std::cout << "  block " << height << "  txs="
                       << block->transaction_count << '\n';
         }
-        std::cout << "all blocks downloaded and verified\n";
+        std::cout << "blocks downloaded and verified\n";
     }
 
     // Stay connected and react to new blocks as the node announces them. We did

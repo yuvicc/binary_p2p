@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <cstdint>
 
-// An 80-byte Bitcoin block header
 struct BlockHeader {
     std::int32_t version{};
     std::array<std::byte, 32> previous_block_hash{};

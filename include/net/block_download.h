@@ -10,8 +10,7 @@
 #include <cstdint>
 #include <expected>
 
-// Request a single block by hash (getdata) and block until the peer's "block"
-// reply arrives
+// Request a single block by hash and block
 [[nodiscard]]
 std::expected<BlockMessage, SyncErrorCode>
 request_block(

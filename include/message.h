@@ -77,9 +77,6 @@ struct GetHeadersMessage {
 struct BlockMessage {
     BlockHeader header;
     std::uint64_t transaction_count{};
-    // The transactions are kept as raw serialized bytes: the message framing
-    // already delimits them, and a validation engine (for example
-    // libbitcoinkernel) consumes the serialized block directly.
     std::vector<std::byte> transactions;
 
     friend bool operator==(
