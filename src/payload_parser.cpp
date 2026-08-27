@@ -1,5 +1,6 @@
 #include "payload_parser.h"
 
+#include "addr_parser.h"
 #include "block_parser.h"
 #include "getheaders_parser.h"
 #include "headers_parser.h"
@@ -185,6 +186,43 @@ parse_payload(RawMessage raw_message)
                 GetdataMessage{
                     .inventory = std::move(*inventory),
                 }
+            },
+        };
+    }
+
+    if (command == "addr") {
+        auto addresses = parse_addr_payload(
+            raw_message.payload
+        );
+
+        if (!addresses) {
+            return std::unexpected{
+                addresses.error()
+            };
+        }
+
+        return Message{
+            .header = std::move(raw_message.header),
+            .payload = MessagePayload{
+                AddrMessage{
+                    .addresses = std::move(*addresses),
+                }
+            },
+        };
+    }
+
+    if (command == "getaddr") {
+        // getaddr carries no payload.
+        if (!raw_message.payload.empty()) {
+            return std::unexpected{
+                ParseError::trailing_bytes
+            };
+        }
+
+        return Message{
+            .header = std::move(raw_message.header),
+            .payload = MessagePayload{
+                GetAddrMessage{}
             },
         };
     }

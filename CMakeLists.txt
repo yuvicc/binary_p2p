@@ -8,6 +8,8 @@ project(
 
 add_library(binary_p2p
     src/binary_p2p.cpp
+    src/addr_parser.cpp
+    src/addr_serializer.cpp
     src/message_header.cpp
     src/message_header_parser.cpp
     src/block_parser.cpp

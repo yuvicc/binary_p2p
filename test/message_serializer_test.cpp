@@ -139,6 +139,49 @@ BOOST_AUTO_TEST_CASE(round_trip_inv)
     BOOST_TEST((std::get<InvMessage>(recovered) == original));
 }
 
+BOOST_AUTO_TEST_CASE(round_trip_addr)
+{
+    std::array<std::byte, 16> ip{};
+    ip[10] = std::byte{0xff};
+    ip[11] = std::byte{0xff};
+    ip[12] = std::byte{203};
+    ip[15] = std::byte{7};
+
+    const AddrMessage original{
+        .addresses = {
+            AddressEntry{
+                .timestamp = 1'700'000'000U,
+                .address = NetworkAddress{
+                    .services = 0x0409,
+                    .ip_address = ip,
+                    .port = 8333,
+                },
+            },
+            AddressEntry{
+                .timestamp = 1'700'000'001U,
+                .address = NetworkAddress{.services = 1, .port = 18333},
+            },
+        },
+    };
+
+    const auto recovered = round_trip("addr", original);
+    BOOST_REQUIRE(std::holds_alternative<AddrMessage>(recovered));
+    BOOST_TEST((std::get<AddrMessage>(recovered) == original));
+}
+
+BOOST_AUTO_TEST_CASE(round_trip_empty_addr)
+{
+    const auto recovered = round_trip("addr", AddrMessage{});
+    BOOST_REQUIRE(std::holds_alternative<AddrMessage>(recovered));
+    BOOST_TEST(std::get<AddrMessage>(recovered).addresses.empty());
+}
+
+BOOST_AUTO_TEST_CASE(round_trip_getaddr)
+{
+    const auto recovered = round_trip("getaddr", GetAddrMessage{});
+    BOOST_TEST(std::holds_alternative<GetAddrMessage>(recovered));
+}
+
 BOOST_AUTO_TEST_CASE(round_trip_headers)
 {
     const HeadersMessage original{
