@@ -182,6 +182,41 @@ BOOST_AUTO_TEST_CASE(round_trip_getaddr)
     BOOST_TEST(std::holds_alternative<GetAddrMessage>(recovered));
 }
 
+BOOST_AUTO_TEST_CASE(round_trip_addrv2)
+{
+    const AddrV2Message original{
+        .addresses = {
+            AddressV2Entry{
+                .timestamp = 1'700'000'000U,
+                .services = 0x0409,
+                .network_id = AddressV2Network::ipv4,
+                .address = {
+                    std::byte{203}, std::byte{0}, std::byte{113}, std::byte{7}
+                },
+                .port = 8333,
+            },
+            // A Tor v3 address, which the legacy addr format cannot carry.
+            AddressV2Entry{
+                .timestamp = 1'700'000'001U,
+                .services = 1,
+                .network_id = AddressV2Network::torv3,
+                .address = std::vector<std::byte>(32, std::byte{0xC3}),
+                .port = 8333,
+            },
+        },
+    };
+
+    const auto recovered = round_trip("addrv2", original);
+    BOOST_REQUIRE(std::holds_alternative<AddrV2Message>(recovered));
+    BOOST_TEST((std::get<AddrV2Message>(recovered) == original));
+}
+
+BOOST_AUTO_TEST_CASE(round_trip_sendaddrv2)
+{
+    const auto recovered = round_trip("sendaddrv2", SendAddrV2Message{});
+    BOOST_TEST(std::holds_alternative<SendAddrV2Message>(recovered));
+}
+
 BOOST_AUTO_TEST_CASE(round_trip_headers)
 {
     const HeadersMessage original{
