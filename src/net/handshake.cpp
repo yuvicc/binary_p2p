@@ -23,7 +23,7 @@ HandshakeErrorCode to_handshake_error(PeerErrorCode code)
 
 } // namespace
 
-std::expected<VersionMessage, HandshakeErrorCode>
+std::expected<HandshakeResult, HandshakeErrorCode>
 perform_handshake(Peer& peer, const VersionMessage& local_version)
 {
     // 1. Announce ourselves.
@@ -52,16 +52,29 @@ perform_handshake(Peer& peer, const VersionMessage& local_version)
         return std::unexpected{HandshakeErrorCode::protocol_error};
     }
 
-    VersionMessage result = *peer_version;
+    HandshakeResult result{.version = *peer_version};
 
-    // 3. Acknowledge the peer's version.
+    // 3. Signal that we understand addrv2, which BIP155 places after the peer's
+    //    version and before our verack. Older peers would disconnect on an
+    //    unknown command, so only offer it to peers new enough to expect it.
+    if (result.version.protocol_version >= addrv2_protocol_version) {
+        if (
+            const auto sent =
+                peer.send("sendaddrv2", SendAddrV2Message{});
+            !sent
+        ) {
+            return std::unexpected{to_handshake_error(sent.error())};
+        }
+    }
+
+    // 4. Acknowledge the peer's version.
     if (const auto sent = peer.send("verack", VerackMessage{}); !sent) {
         return std::unexpected{to_handshake_error(sent.error())};
     }
 
-    // 4. Wait for the peer's verack, ignoring any optional negotiation messages
-    //    (sendheaders, sendcmpct, feefilter, wtxidrelay, sendaddrv2, ...) the
-    //    peer may interleave before it.
+    // 5. Wait for the peer's verack, ignoring any optional negotiation messages
+    //    (sendheaders, sendcmpct, feefilter, wtxidrelay, ...) the peer may
+    //    interleave before it. Its own sendaddrv2, if any, arrives here.
     while (true) {
         auto next = peer.receive();
         if (!next) {
@@ -77,6 +90,12 @@ perform_handshake(Peer& peer, const VersionMessage& local_version)
         if (command == "version") {
             // A second version is a protocol violation.
             return std::unexpected{HandshakeErrorCode::unexpected_message};
+        }
+
+        if (command == "sendaddrv2") {
+            // The peer will accept addrv2 from us and may answer a getaddr
+            // with one.
+            result.supports_addrv2 = true;
         }
 
         // Anything else during the handshake is an optional negotiation

@@ -10,6 +10,9 @@ add_library(binary_p2p
     src/binary_p2p.cpp
     src/addr_parser.cpp
     src/addr_serializer.cpp
+    src/addressv2.cpp
+    src/addrv2_parser.cpp
+    src/addrv2_serializer.cpp
     src/message_header.cpp
     src/message_header_parser.cpp
     src/block_parser.cpp
@@ -36,6 +39,7 @@ add_library(binary_p2p
     src/net/tcp_connection.cpp
     src/net/peer.cpp
     src/net/handshake.cpp
+    src/net/addr_exchange.cpp
     src/net/header_sync.cpp
     src/net/block_download.cpp
 )

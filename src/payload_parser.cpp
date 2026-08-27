@@ -1,6 +1,7 @@
 #include "payload_parser.h"
 
 #include "addr_parser.h"
+#include "addrv2_parser.h"
 #include "block_parser.h"
 #include "getheaders_parser.h"
 #include "headers_parser.h"
@@ -207,6 +208,43 @@ parse_payload(RawMessage raw_message)
                 AddrMessage{
                     .addresses = std::move(*addresses),
                 }
+            },
+        };
+    }
+
+    if (command == "addrv2") {
+        auto addresses = parse_addrv2_payload(
+            raw_message.payload
+        );
+
+        if (!addresses) {
+            return std::unexpected{
+                addresses.error()
+            };
+        }
+
+        return Message{
+            .header = std::move(raw_message.header),
+            .payload = MessagePayload{
+                AddrV2Message{
+                    .addresses = std::move(*addresses),
+                }
+            },
+        };
+    }
+
+    if (command == "sendaddrv2") {
+        // sendaddrv2 carries no payload.
+        if (!raw_message.payload.empty()) {
+            return std::unexpected{
+                ParseError::trailing_bytes
+            };
+        }
+
+        return Message{
+            .header = std::move(raw_message.header),
+            .payload = MessagePayload{
+                SendAddrV2Message{}
             },
         };
     }
