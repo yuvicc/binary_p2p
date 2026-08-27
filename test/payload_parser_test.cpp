@@ -60,6 +60,17 @@ std::vector<std::byte> single_inventory_payload(std::uint32_t type)
     return out;
 }
 
+// A single-entry addr payload: CompactSize count of 1 followed by one address
+// entry (uint32 time + uint64 services + 16-byte ip + uint16 big-endian port).
+std::vector<std::byte> single_addr_payload(std::uint32_t timestamp)
+{
+    std::vector<std::byte> out;
+    put_u8(out, 0x01); // CompactSize count = 1
+    put_le<std::uint32_t>(out, timestamp);
+    put_network_address(out, 1, 8333);
+    return out;
+}
+
 // A single-entry headers payload: CompactSize count of 1 followed by an
 // 80-byte block header and a zero transaction count.
 std::vector<std::byte> single_headers_payload()
@@ -166,7 +177,7 @@ BOOST_AUTO_TEST_CASE(unknown_command_preserves_payload)
     };
     const auto expected = payload;
 
-    const auto result = parse_payload(make_raw("addr", std::move(payload)));
+    const auto result = parse_payload(make_raw("xyzzy", std::move(payload)));
 
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(std::holds_alternative<UnknownMessage>(result->payload));
@@ -202,6 +213,48 @@ BOOST_AUTO_TEST_CASE(inv_command_is_parsed)
     BOOST_TEST(inv.inventory[0].type == InventoryType::tx);
 }
 
+
+BOOST_AUTO_TEST_CASE(addr_command_is_parsed)
+{
+    const auto result =
+        parse_payload(make_raw("addr", single_addr_payload(1'700'000'000U)));
+
+    BOOST_REQUIRE(result.has_value());
+    BOOST_REQUIRE(std::holds_alternative<AddrMessage>(result->payload));
+
+    const auto& addr = std::get<AddrMessage>(result->payload);
+    BOOST_REQUIRE(addr.addresses.size() == 1);
+    BOOST_TEST(addr.addresses[0].timestamp == 1'700'000'000U);
+    BOOST_TEST(addr.addresses[0].address.services == 1U);
+    BOOST_TEST(addr.addresses[0].address.port == 8333U);
+}
+
+BOOST_AUTO_TEST_CASE(malformed_addr_command_is_rejected)
+{
+    // CompactSize claims one entry but no entry bytes follow.
+    const auto result = parse_payload(make_raw("addr", {std::byte{0x01}}));
+
+    BOOST_REQUIRE(!result.has_value());
+    BOOST_TEST(result.error() == ParseError::malformed_payload);
+}
+
+BOOST_AUTO_TEST_CASE(empty_getaddr_succeeds)
+{
+    const auto result = parse_payload(make_raw("getaddr", {}));
+
+    BOOST_REQUIRE(result.has_value());
+    BOOST_TEST(std::holds_alternative<GetAddrMessage>(result->payload));
+    BOOST_TEST(result->header.command_name() == "getaddr");
+}
+
+BOOST_AUTO_TEST_CASE(nonempty_getaddr_returns_trailing_bytes)
+{
+    const auto result =
+        parse_payload(make_raw("getaddr", {std::byte{0x00}}));
+
+    BOOST_REQUIRE(!result.has_value());
+    BOOST_TEST(result.error() == ParseError::trailing_bytes);
+}
 
 BOOST_AUTO_TEST_CASE(headers_command_is_parsed)
 {
