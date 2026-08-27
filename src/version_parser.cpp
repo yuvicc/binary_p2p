@@ -11,9 +11,6 @@
 #include <string>
 #include <utility>
 
-namespace {
-
-[[nodiscard]]
 std::expected<NetworkAddress, ParseError>
 parse_network_address(ByteReader& reader)
 {
@@ -51,8 +48,6 @@ parse_network_address(ByteReader& reader)
         .port = *port
     };
 }
-
-} // namespace
 
 std::expected<VersionMessage, ParseError>
 parse_version_payload(

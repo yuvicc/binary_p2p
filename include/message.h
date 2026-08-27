@@ -1,5 +1,6 @@
 #pragma once
 
+#include "address.h"
 #include "block_header.h"
 #include "inventory.h"
 #include "message_header.h"
@@ -54,6 +55,22 @@ struct GetdataMessage {
     ) = default;
 };
 
+struct AddrMessage {
+    std::vector<AddressEntry> addresses;
+
+    friend bool operator==(
+        const AddrMessage&,
+        const AddrMessage&
+    ) = default;
+};
+
+struct GetAddrMessage {
+    friend constexpr bool operator==(
+        const GetAddrMessage&,
+        const GetAddrMessage&
+    ) = default;
+};
+
 struct HeadersMessage {
     std::vector<BlockHeader> headers;
 
@@ -101,6 +118,8 @@ using MessagePayload = std::variant<
     PongMessage,
     InvMessage,
     GetdataMessage,
+    AddrMessage,
+    GetAddrMessage,
     HeadersMessage,
     GetHeadersMessage,
     BlockMessage,

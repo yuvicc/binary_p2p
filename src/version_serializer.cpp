@@ -5,8 +5,6 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace {
-
 void serialize_network_address(
     ByteWriter& writer,
     const NetworkAddress& address
@@ -16,8 +14,6 @@ void serialize_network_address(
     writer.write_array(address.ip_address);
     writer.write_u16_be(address.port);
 }
-
-} // namespace
 
 void serialize_version_payload(
     ByteWriter& writer,
