@@ -1,6 +1,7 @@
 #include "message_serializer.h"
 
 #include "addr_serializer.h"
+#include "addrv2_serializer.h"
 #include "block_serializer.h"
 #include "getheaders_serializer.h"
 #include "headers_serializer.h"
@@ -46,6 +47,12 @@ std::vector<std::byte> serialize_payload(const MessagePayload& payload)
             }
             else if constexpr (std::is_same_v<T, GetAddrMessage>) {
                 // getaddr carries no payload
+            }
+            else if constexpr (std::is_same_v<T, AddrV2Message>) {
+                serialize_addrv2_payload(writer, message.addresses);
+            }
+            else if constexpr (std::is_same_v<T, SendAddrV2Message>) {
+                // sendaddrv2 carries no payload
             }
             else if constexpr (std::is_same_v<T, HeadersMessage>) {
                 serialize_headers_payload(writer, message.headers);

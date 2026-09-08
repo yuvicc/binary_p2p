@@ -71,6 +71,25 @@ std::vector<std::byte> single_addr_payload(std::uint32_t timestamp)
     return out;
 }
 
+// A single-entry addrv2 payload: CompactSize count of 1 followed by one entry
+// (uint32 time + CompactSize services + uint8 network id + CompactSize-prefixed
+// address + uint16 big-endian port).
+std::vector<std::byte> single_addrv2_payload(std::uint8_t network_id)
+{
+    std::vector<std::byte> out;
+    put_u8(out, 0x01); // CompactSize count = 1
+    put_le<std::uint32_t>(out, 1'700'000'000U);
+    put_u8(out, 0x01); // CompactSize services = 1
+    put_u8(out, network_id);
+    put_u8(out, 0x04); // CompactSize address size = 4
+    put_u8(out, 203);
+    put_u8(out, 0);
+    put_u8(out, 113);
+    put_u8(out, 7);
+    put_u16_be(out, 8333);
+    return out;
+}
+
 // A single-entry headers payload: CompactSize count of 1 followed by an
 // 80-byte block header and a zero transaction count.
 std::vector<std::byte> single_headers_payload()
@@ -251,6 +270,66 @@ BOOST_AUTO_TEST_CASE(nonempty_getaddr_returns_trailing_bytes)
 {
     const auto result =
         parse_payload(make_raw("getaddr", {std::byte{0x00}}));
+
+    BOOST_REQUIRE(!result.has_value());
+    BOOST_TEST(result.error() == ParseError::trailing_bytes);
+}
+
+BOOST_AUTO_TEST_CASE(addrv2_command_is_parsed)
+{
+    const auto result = parse_payload(
+        make_raw("addrv2", single_addrv2_payload(AddressV2Network::ipv4))
+    );
+
+    BOOST_REQUIRE(result.has_value());
+    BOOST_REQUIRE(std::holds_alternative<AddrV2Message>(result->payload));
+
+    const auto& addr = std::get<AddrV2Message>(result->payload);
+    BOOST_REQUIRE(addr.addresses.size() == 1);
+    BOOST_TEST(addr.addresses[0].timestamp == 1'700'000'000U);
+    BOOST_TEST(addr.addresses[0].network_id == AddressV2Network::ipv4);
+    BOOST_TEST(addr.addresses[0].address.size() == 4U);
+    BOOST_TEST(addr.addresses[0].port == 8333U);
+}
+
+// An unknown network id is carried through rather than rejected, so that a
+// network added after this build still parses.
+BOOST_AUTO_TEST_CASE(addrv2_with_unknown_network_is_parsed)
+{
+    const auto result =
+        parse_payload(make_raw("addrv2", single_addrv2_payload(0x99)));
+
+    BOOST_REQUIRE(result.has_value());
+    BOOST_REQUIRE(std::holds_alternative<AddrV2Message>(result->payload));
+
+    const auto& addr = std::get<AddrV2Message>(result->payload);
+    BOOST_REQUIRE(addr.addresses.size() == 1);
+    BOOST_TEST(addr.addresses[0].network_id == 0x99);
+    BOOST_TEST(!is_usable_address(addr.addresses[0]));
+}
+
+BOOST_AUTO_TEST_CASE(malformed_addrv2_command_is_rejected)
+{
+    // CompactSize claims one entry but no entry bytes follow.
+    const auto result = parse_payload(make_raw("addrv2", {std::byte{0x01}}));
+
+    BOOST_REQUIRE(!result.has_value());
+    BOOST_TEST(result.error() == ParseError::malformed_payload);
+}
+
+BOOST_AUTO_TEST_CASE(empty_sendaddrv2_succeeds)
+{
+    const auto result = parse_payload(make_raw("sendaddrv2", {}));
+
+    BOOST_REQUIRE(result.has_value());
+    BOOST_TEST(std::holds_alternative<SendAddrV2Message>(result->payload));
+    BOOST_TEST(result->header.command_name() == "sendaddrv2");
+}
+
+BOOST_AUTO_TEST_CASE(nonempty_sendaddrv2_returns_trailing_bytes)
+{
+    const auto result =
+        parse_payload(make_raw("sendaddrv2", {std::byte{0x00}}));
 
     BOOST_REQUIRE(!result.has_value());
     BOOST_TEST(result.error() == ParseError::trailing_bytes);

@@ -19,6 +19,7 @@ add_boost_test(raw_message_parser_test)
 add_boost_test(inventory_parser_test)
 add_boost_test(inventory_serializer_test)
 add_boost_test(addr_test)
+add_boost_test(addrv2_test)
 add_boost_test(headers_parser_test)
 add_boost_test(headers_serializer_test)
 add_boost_test(getheaders_test)
@@ -39,6 +40,9 @@ target_link_libraries(net_test PRIVATE Threads::Threads)
 
 add_boost_test(handshake_test)
 target_link_libraries(handshake_test PRIVATE Threads::Threads)
+
+add_boost_test(addr_exchange_test)
+target_link_libraries(addr_exchange_test PRIVATE Threads::Threads)
 
 add_boost_test(header_sync_test)
 target_link_libraries(header_sync_test PRIVATE Threads::Threads)

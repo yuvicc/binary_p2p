@@ -1,6 +1,7 @@
 #pragma once
 
 #include "address.h"
+#include "addressv2.h"
 #include "block_header.h"
 #include "inventory.h"
 #include "message_header.h"
@@ -71,6 +72,25 @@ struct GetAddrMessage {
     ) = default;
 };
 
+struct AddrV2Message {
+    std::vector<AddressV2Entry> addresses;
+
+    friend bool operator==(
+        const AddrV2Message&,
+        const AddrV2Message&
+    ) = default;
+};
+
+// BIP155 negotiation: sending this before the verack tells the peer it may
+// reply to a getaddr with addrv2 instead of addr. There is no "getaddrv2" --
+// the same getaddr asks for either format.
+struct SendAddrV2Message {
+    friend constexpr bool operator==(
+        const SendAddrV2Message&,
+        const SendAddrV2Message&
+    ) = default;
+};
+
 struct HeadersMessage {
     std::vector<BlockHeader> headers;
 
@@ -120,6 +140,8 @@ using MessagePayload = std::variant<
     GetdataMessage,
     AddrMessage,
     GetAddrMessage,
+    AddrV2Message,
+    SendAddrV2Message,
     HeadersMessage,
     GetHeadersMessage,
     BlockMessage,
