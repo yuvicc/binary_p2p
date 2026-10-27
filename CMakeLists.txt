@@ -79,7 +79,7 @@ install(
 
 option(BINARY_P2P_BUILD_EXAMPLES "Build the example programs" OFF)
 
-# The examples are developer-only and are not exported into the Conan package
+# The examples are developer-only and are not installed
 if (BINARY_P2P_BUILD_EXAMPLES AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt")
     add_subdirectory(examples)
 endif()
